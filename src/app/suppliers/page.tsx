@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
@@ -9,7 +9,6 @@ import type { Supplier } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
   Search,
   Star,
@@ -24,7 +23,25 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 
+// المكون الرئيسي المغلف بـ Suspense لحل مشكلة البناء في Vercel
 export default function SuppliersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-500 font-medium">جاري تحميل صفحة الموردين...</p>
+          </div>
+        </div>
+      }
+    >
+      <SuppliersContent />
+    </Suspense>
+  );
+}
+
+function SuppliersContent() {
   const searchParams = useSearchParams();
   const { suppliers } = useAppStore();
   const search = searchParams.get('search') || '';
@@ -67,10 +84,6 @@ export default function SuppliersPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const getCategoryLabel = (key: string) => {
-    return CATEGORIES.find(c => c.key === key)?.labelAr || key;
-  };
 
   return (
     <div className="min-h-screen">
@@ -320,3 +333,4 @@ function SupplierListItem({ supplier }: { supplier: Supplier }) {
     </Link>
   );
 }
+
